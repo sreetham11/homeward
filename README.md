@@ -131,7 +131,7 @@ flowchart TD
 | Language | TypeScript (strict) | `^5.6.3` |
 | Styling | Tailwind CSS | `^3.4.14` |
 | Validation | Zod | `^3.23.8` |
-| LLM chat SDK | `openai` (used against 5 providers) | `^4.68.4` |
+| LLM chat SDK | `openai` (used against 4 providers) | `^4.68.4` |
 | Gemini vision/embeddings | `@google/generative-ai` | `^0.21.0` |
 | Database client | `@supabase/supabase-js` | `^2.45.4` |
 | Test runner | Vitest | `^2.1.4` |
@@ -144,7 +144,7 @@ flowchart TD
 `lib/llm.ts` calls each tier through the same `openai` SDK client with a different
 `baseURL`/`apiKey`/model, in this order:
 
-**Groq → OpenAI → Gemini → xAI (Grok) → Tencent Hunyuan**
+**Groq → OpenAI → Gemini → xAI (Grok)**
 
 - A provider with no API key set is **skipped**, not attempted.
 - A configured provider that errors or returns an empty response **falls through** to the next

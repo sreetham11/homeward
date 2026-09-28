@@ -32,7 +32,6 @@ const PROVIDER_ENV_KEYS = [
   "OPENAI_API_KEY",
   "GEMINI_API_KEY",
   "XAI_API_KEY",
-  "HUNYUAN_API_KEY",
 ] as const;
 const ORIGINAL_ENV: Record<string, string | undefined> = {};
 for (const key of PROVIDER_ENV_KEYS) ORIGINAL_ENV[key] = process.env[key];
@@ -89,26 +88,19 @@ describe("chatCompletion — falls through to the next configured provider on er
     expect(mockCreate).toHaveBeenCalledTimes(3);
   });
 
-  it("falls through all the way to Hunyuan when every earlier tier fails", async () => {
-    setConfiguredProviders([
-      "GROQ_API_KEY",
-      "OPENAI_API_KEY",
-      "GEMINI_API_KEY",
-      "XAI_API_KEY",
-      "HUNYUAN_API_KEY",
-    ]);
+  it("falls through all the way to Grok (xAI) when every earlier tier fails", async () => {
+    setConfiguredProviders(["GROQ_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY"]);
     mockCreate
       .mockRejectedValueOnce(new Error("groq down"))
       .mockRejectedValueOnce(new Error("openai down"))
       .mockRejectedValueOnce(new Error("gemini down"))
-      .mockRejectedValueOnce(new Error("grok down"))
-      .mockResolvedValueOnce(successResponse("hello from hunyuan"));
+      .mockResolvedValueOnce(successResponse("hello from grok"));
 
     const result = await chatCompletion(MESSAGES);
 
-    expect(result.provider).toBe("hunyuan");
-    expect(result.text).toBe("hello from hunyuan");
-    expect(mockCreate).toHaveBeenCalledTimes(5);
+    expect(result.provider).toBe("xai");
+    expect(result.text).toBe("hello from grok");
+    expect(mockCreate).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -138,47 +130,41 @@ describe("chatCompletion — an unconfigured provider is skipped, not attempted"
     expect(mockCreate).toHaveBeenCalledTimes(1);
   });
 
-  it("never calls the client for Hunyuan when HUNYUAN_API_KEY is not set", async () => {
+  it("never calls the client for xAI (Grok) when XAI_API_KEY is not set", async () => {
     setConfiguredProviders(["GROQ_API_KEY"]);
     mockCreate.mockResolvedValueOnce(successResponse("hi from groq"));
 
     const result = await chatCompletion(MESSAGES);
 
     expect(result.provider).toBe("groq");
-    // Only one client should ever have been constructed — Hunyuan, last in chain order and
+    // Only one client should ever have been constructed — xAI, last in chain order and
     // unconfigured here, must never be attempted.
     expect(mockCreate).toHaveBeenCalledTimes(1);
     expect(vi.mocked(OpenAI)).toHaveBeenCalledTimes(1);
   });
 
   it("is used as the fallback when it's the only configured provider, even sitting last in chain order", async () => {
-    setConfiguredProviders(["HUNYUAN_API_KEY"]);
-    mockCreate.mockResolvedValueOnce(successResponse("hi from hunyuan"));
+    setConfiguredProviders(["XAI_API_KEY"]);
+    mockCreate.mockResolvedValueOnce(successResponse("hi from grok"));
 
     const result = await chatCompletion(MESSAGES);
 
-    expect(result.provider).toBe("hunyuan");
+    expect(result.provider).toBe("xai");
     expect(mockCreate).toHaveBeenCalledTimes(1);
     expect(vi.mocked(OpenAI).mock.calls[0]?.[0]).toMatchObject({
       apiKey: "test-key",
-      baseURL: "https://api.hunyuan.cloud.tencent.com/v1",
+      baseURL: "https://api.x.ai/v1",
     });
   });
 });
 
 describe("chatCompletion — all configured providers fail", () => {
   it("throws LLMUnavailableError with one attempt entry per configured provider, in chain order", async () => {
-    setConfiguredProviders([
-      "GROQ_API_KEY",
-      "OPENAI_API_KEY",
-      "GEMINI_API_KEY",
-      "XAI_API_KEY",
-      "HUNYUAN_API_KEY",
-    ]);
+    setConfiguredProviders(["GROQ_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY"]);
     mockCreate.mockRejectedValue(new Error("boom"));
 
     await expect(chatCompletion(MESSAGES)).rejects.toThrow(LLMUnavailableError);
-    expect(mockCreate).toHaveBeenCalledTimes(5);
+    expect(mockCreate).toHaveBeenCalledTimes(4);
   });
 
   it("the thrown error's attempts list names every provider that was tried and its error", async () => {

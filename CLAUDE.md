@@ -134,10 +134,10 @@ around the Layer A/Layer B safety logic in `lib/deviation.ts`:
 
 ## Multi-provider LLM layer — `lib/llm.ts`
 
-Failover chain: **Groq (free, default) → OpenAI → Gemini → Grok (xAI) → Tencent Hunyuan**. All
-five are called through the same `openai` SDK client with a different `baseURL`/`apiKey`/model
-per tier (Gemini and Hunyuan each via their own OpenAI-compatible endpoint) — that's what makes
-`chatCompletion()` one generic function instead of five bespoke integrations. A provider with no API key set is
+Failover chain: **Groq (free, default) → OpenAI → Gemini → Grok (xAI)**. All four are called
+through the same `openai` SDK client with a different `baseURL`/`apiKey`/model per tier (Gemini
+via its own OpenAI-compatible endpoint) — that's what makes `chatCompletion()` one generic
+function instead of four bespoke integrations. A provider with no API key set is
 skipped, not attempted; a configured provider that errors falls through to the next tier.
 If every tier is unavailable, `chatCompletion()` throws `LLMUnavailableError`, and every
 caller (`planBuilder.ts`, `deviation.ts`, `escalate/route.ts`) catches that and drops to a
@@ -150,7 +150,7 @@ description), since multimodal input needs a vision-capable model that the OpenA
 text tiers don't provide here.
 
 Override default models per provider via `GROQ_MODEL` / `OPENAI_MODEL` / `GEMINI_MODEL` /
-`XAI_MODEL` / `HUNYUAN_MODEL` env vars if a default model name goes stale.
+`XAI_MODEL` env vars if a default model name goes stale.
 
 ## Patient/caregiver linking — recovery codes, not accounts
 

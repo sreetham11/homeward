@@ -1,11 +1,10 @@
 // Multi-provider LLM layer with auto-failover.
 //
-// Chain order: Groq (free, default) -> OpenAI -> Gemini -> Grok (xAI) -> Tencent Hunyuan.
-// Groq, OpenAI, Grok, Gemini (via its OpenAI-compatible endpoint), and Hunyuan (also via its
-// own OpenAI-compatible endpoint, see https://cloud.tencent.com/document/product/1729/111007)
-// are all called through the same `openai` SDK client with a different baseURL/apiKey/model
-// per tier — that's what makes the failover loop below a single generic function instead of
-// five bespoke integrations.
+// Chain order: Groq (free, default) -> OpenAI -> Gemini -> Grok (xAI).
+// Groq, OpenAI, Grok, and Gemini (via its OpenAI-compatible endpoint) are all called through
+// the same `openai` SDK client with a different baseURL/apiKey/model per tier — that's what
+// makes the failover loop below a single generic function instead of four bespoke
+// integrations.
 //
 // If a provider has no API key configured, it's skipped (not attempted). If a configured
 // provider errors (bad key, rate limit, network), we log and fall through to the next tier.
@@ -26,7 +25,7 @@ export interface ChatMessage {
 }
 
 interface ProviderConfig {
-  id: "groq" | "openai" | "gemini" | "xai" | "hunyuan";
+  id: "groq" | "openai" | "gemini" | "xai";
   envKey: string;
   baseURL?: string;
   defaultModel: string;
@@ -61,16 +60,6 @@ const PROVIDER_CHAIN: ProviderConfig[] = [
     baseURL: "https://api.x.ai/v1",
     defaultModel: "grok-3-mini",
     modelEnvOverride: "XAI_MODEL",
-  },
-  {
-    id: "hunyuan",
-    envKey: "HUNYUAN_API_KEY",
-    // Confirmed against Tencent Cloud's own docs (cloud.tencent.com/document/product/1729/111007):
-    // Hunyuan exposes an OpenAI-compatible /v1/chat/completions endpoint, auth via a standard
-    // "Authorization: Bearer <key>" header — same shape as every other tier in this chain.
-    baseURL: "https://api.hunyuan.cloud.tencent.com/v1",
-    defaultModel: "hunyuan-turbos-latest",
-    modelEnvOverride: "HUNYUAN_MODEL",
   },
 ];
 
