@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "Is my data private?",
-    a: "This is a student prototype. Recovery codes are a shared secret, not a medical-grade credential, and it isn't intended for real patient data as-is. When cross-device sync isn't configured, your plan stays in your own browser on your own device.",
+    a: "This is a hackathon prototype. Recovery codes are a shared secret, not a medical-grade credential, and it isn't intended for real patient data as-is. When cross-device sync isn't configured, your plan stays in your own browser on your own device.",
   },
   {
     q: "What if I don't have my discharge document handy?",

@@ -1,6 +1,6 @@
 // Small transparency endpoint: shows which integrations are configured and which fallback
 // path is active for each. Not part of the 5-stage pipeline — purely a demo/debug aid so a
-// judge/lecturer can see at a glance that "degrades gracefully with zero keys" is real, not
+// judge can see at a glance that "degrades gracefully with zero keys" is real, not
 // just a claim in the README.
 //
 // ragMode below reflects a REAL runtime probe (see checkVectorSearchHealth), not just env var

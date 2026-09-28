@@ -1,4 +1,4 @@
-// Curated knowledge base seed content for the FA prototype.
+// Curated knowledge base seed content for this hackathon prototype.
 //
 // Every document below is an ORIGINAL paraphrase — written in our own words, never copied
 // sentences or mirrored the structure of the source — of a real, named public patient-education

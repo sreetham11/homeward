@@ -12,7 +12,7 @@
 //   single device" demo path where patient and caregiver views are just two browser tabs.
 //
 // A recovery code (not a login) is what links patient and caregiver — see CLAUDE.md for why
-// this project uses a short shared code instead of formal auth for the FA prototype.
+// this project uses a short shared code instead of formal auth for this hackathon prototype.
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { CheckinInput, DeviationResult, EscalationSummary, RecoveryPlan } from "./types";

@@ -5,8 +5,9 @@ discharge summary into a structured, trackable day-by-day recovery plan for a pa
 their caregiver, with daily check-ins (text + wound photo) that flag when something looks
 abnormal enough to escalate to a real provider.
 
-Built for a C240 (AI Essentials & Innovations) polytechnic module — a working FA prototype
-that runs cleanly with minimal setup and degrades gracefully with zero API keys.
+Built for the Tencent Cloud AI CAN DO IT Hackathon Singapore 2026 (Healthcare track) — a
+working prototype that runs cleanly with minimal setup and degrades gracefully with zero API
+keys.
 
 ## Non-negotiable design principle
 
@@ -15,9 +16,6 @@ truth. Homeward never diagnoses.** Any ambiguous or concerning signal routes to 
 (caregiver or provider) — never a verdict from the app itself. Every escalation/reassurance
 output carries a visible "not a diagnosis" disclaimer (see `DISCLAIMER` in
 `app/api/escalate/route.ts` and the banner in `components/RecoveryTracer.tsx`).
-
-This mirrors a sister project, TRIAX (clinical intake triage): "the AI drafts, the nurse
-decides." Here: the AI extracts and compares, the human decides.
 
 ## The five-stage pipeline
 
@@ -161,8 +159,8 @@ No formal auth. `app/api/plan` mints a short recovery code (`generateRecoveryCod
 created. Sharing that code (`/patient?code=XXXXXX` ↔ `/caregiver?code=XXXXXX`) is what links
 the two views — no email, no password, no magic link, so there's no dependency on email
 delivery (`RESEND_API_KEY`) for the core demo flow. This was a deliberate simplification for
-the FA prototype; `supabase/schema.sql` leaves RLS open behind the recovery code as a shared
-secret and says explicitly not to use it as-is for real patient data.
+the hackathon prototype; `supabase/schema.sql` leaves RLS open behind the recovery code as a
+shared secret and says explicitly not to use it as-is for real patient data.
 
 ## Sync: Supabase Realtime vs. localStorage + BroadcastChannel
 
@@ -241,7 +239,7 @@ components/
 supabase/schema.sql   # kb_documents (+ pgvector match fn) and recovery_plans/checkins/escalations
 ```
 
-## Known simplifications (student FA prototype, not production)
+## Known simplifications (hackathon prototype, not production)
 
 - No auth — recovery codes are a shared secret, not a credential.
 - Supabase RLS is open; do not point this at real patient data as-is.

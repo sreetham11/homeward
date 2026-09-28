@@ -26,7 +26,7 @@ export function SiteFooter() {
             <p className="mt-6 max-w-md text-xs leading-relaxed text-homeward-muted">
               Homeward tracks your recovery against your own discharge plan — it never
               diagnoses. Always contact your provider if you&apos;re unsure, or emergency
-              services for anything urgent. This is a student prototype and is not intended
+              services for anything urgent. This is a hackathon prototype and is not intended
               for real patient data.
             </p>
           </div>

@@ -90,7 +90,7 @@ alter publication supabase_realtime add table checkins;
 alter publication supabase_realtime add table escalations;
 alter publication supabase_realtime add table presence_pings;
 
--- This is a student FA prototype: RLS is intentionally left open (no row-level security
+-- This is a hackathon prototype: RLS is intentionally left open (no row-level security
 -- policies) behind the recovery_code acting as a shared secret. Do not use this schema
 -- as-is for real patient data — add RLS keyed on authenticated patient/caregiver identity
 -- before any real deployment.
