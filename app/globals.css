@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #faf5ec;
+  color: #221f1a;
+}
+
+/* Headlines get the display serif for typographic contrast against the plain
+   sans body copy; smaller h3/h4 titles stay in the body face so the contrast
+   reads as "designed hierarchy," not "every heading is fancy now." */
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+h3,
+h4 {
+  letter-spacing: -0.01em;
+}
+
+.disclaimer {
+  @apply rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900;
+}
+
+.card {
+  @apply rounded-2xl border border-homeward-border bg-homeward-card p-6 shadow-sm;
+}
+
+.eyebrow {
+  @apply text-xs font-semibold uppercase tracking-wide text-homeward-muted;
+}
+
+.field-label {
+  @apply mb-1.5 block text-xs font-medium text-homeward-muted;
+}
+
+.input {
+  @apply w-full rounded-lg border border-homeward-border bg-white px-3 py-2 text-sm text-homeward-ink shadow-sm transition placeholder:text-homeward-muted/60 focus:border-homeward-primary focus:outline-none focus:ring-2 focus:ring-homeward-primary/15;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-homeward-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-homeward-primaryDark hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-homeward-border bg-white px-4 py-2.5 text-sm font-semibold text-homeward-ink shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-homeward-primary/30 hover:bg-homeward-mint hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm;
+}
+
+.chip {
+  @apply inline-flex items-center gap-1.5 rounded-full bg-homeward-mint px-3 py-1 text-xs font-medium text-homeward-primary;
+}
+
+/* Warm-accent variant, used sparingly (e.g. the "personalized to you" side of a
+   two-sided comparison) — never the default chip. */
+.chip-accent {
+  @apply inline-flex items-center gap-1.5 rounded-full bg-homeward-accentLight px-3 py-1 text-xs font-medium text-homeward-accentDark;
+}
+
+/* Subtle hover-lift for marketing cards: a slight scale + rise + shadow, quick
+   and calm rather than bouncy. */
+.lift {
+  @apply transition duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-md;
+}
+
+/* Section anchors clear the fixed nav when scrolled to. */
+.anchor {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Faint halftone dot texture — an "old print" quality borrowed for a crafted
+   feel, never a decorative image. Kept very low-opacity/warm so it reads as
+   paper grain, not a pattern. Use on large calm surfaces only (hero, CTA
+   bands), never on small repeated cards where it would look busy. */
+.texture-halftone {
+  background-image: radial-gradient(rgba(34, 31, 26, 0.35) 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+.texture-halftone-light {
+  background-image: radial-gradient(rgba(255, 253, 248, 0.5) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+
+/* Smooth expand/collapse for the FAQ accordion via the grid-rows trick — no JS
+   height measurement needed, and it degrades to an instant snap gracefully
+   under prefers-reduced-motion below. */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.accordion-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.accordion-panel > div {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

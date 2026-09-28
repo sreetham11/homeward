@@ -1,0 +1,177 @@
+{
+  "name": "Homeward — Daily Silence Check & Caregiver Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Before you run this\n\n1. **\"Call Silence Check\" node** — replace the URL with your deployed (or tunnelled) Homeward URL, e.g. `https://your-app.example.com/api/silence-check`. If n8n runs in Docker/cloud and Homeward runs locally, `localhost` won't be reachable — use ngrok or deploy first.\n2. **Same node** — replace the `X-Silence-Check-Key` header value with your real `SILENCE_CHECK_SECRET`.\n3. **\"Send Reminder Email (Resend)\" node** — replace the `Authorization` header value with your real Resend API key, and replace the `from` address with a sender on a domain verified in your Resend account (Resend rejects unverified senders).\n4. **caregiverEmail is currently always null** in this app — see lib/silenceCheck.ts. This workflow will correctly skip every patient (the Filter node drops them) until Homeward actually captures a caregiver email somewhere. Nothing to fix here; that's expected.\n\n**v2 update:** the API's response fields were renamed — `lastCheckinDate`/`hoursSinceLastCheckin` are now `lastActivityDate`/`hoursSinceLastActivity`, plus a new `lastActivityType` (\"checkin\" | \"presence_ping\" | \"plan_created\"). This reflects a new \"I'm okay\" presence-ping button on the patient dashboard that also resets this clock, without counting as a real check-in. If you imported the earlier version of this workflow, re-import this file to pick up the field renames — the old field names will just come back `undefined` in the email otherwise.\n\nFlow: Schedule (9am daily) → GET /api/silence-check → split silentPatients[] into one item each → keep only ones with a caregiverEmail → POST to Resend per patient.",
+        "height": 480,
+        "width": 480,
+        "color": 5
+      },
+      "id": "sticky-setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [200, 20]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "daily-9am-trigger",
+      "name": "Daily 9am Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 480]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://YOUR-DEPLOYED-DOMAIN/api/silence-check",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Silence-Check-Key",
+              "value": "REPLACE_WITH_YOUR_SILENCE_CHECK_SECRET"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-silence-check",
+      "name": "Call Silence Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 480]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "silentPatients",
+        "options": {}
+      },
+      "id": "split-out-silent-patients",
+      "name": "Split Out Silent Patients",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [680, 480]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-caregiver-email-cond",
+              "leftValue": "={{ $json.caregiverEmail }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-caregiver-email",
+      "name": "Has Caregiver Email?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [900, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REPLACE_WITH_YOUR_RESEND_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"Homeward Alerts <alerts@REPLACE_WITH_YOUR_VERIFIED_DOMAIN>\",\n  \"to\": [\"{{ $json.caregiverEmail }}\"],\n  \"subject\": \"Check-in reminder for {{ $json.patientName || $json.recoveryCode }}\",\n  \"html\": \"<p>Hi,</p><p>We wanted to let you know that <strong>{{ $json.patientName || 'your patient (recovery code ' + $json.recoveryCode + ')' }}</strong> hasn't checked in with Homeward in about <strong>{{ Math.floor($json.hoursSinceLastActivity / 24) }} days</strong>.</p><p>{{ $json.neverCheckedIn ? \"They haven't submitted a check-in since their recovery plan was created.\" : \"Their last recorded activity was a \" + ($json.lastActivityType === 'checkin' ? 'full check-in' : 'quick \\\\\"I\\'m okay\\\\\" update') + \".\" }}</p><p>This doesn't necessarily mean anything is wrong — they may just be busy. But it might be worth giving them a quick call or message to check in.</p><p style=\\\"color:#666; font-size:13px;\\\">Recovery code: {{ $json.recoveryCode }}</p><p>— Homeward</p>\"\n}"
+      },
+      "id": "send-reminder-email-resend",
+      "name": "Send Reminder Email (Resend)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 480]
+    }
+  ],
+  "connections": {
+    "Daily 9am Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call Silence Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Silence Check": {
+      "main": [
+        [
+          {
+            "node": "Split Out Silent Patients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Silent Patients": {
+      "main": [
+        [
+          {
+            "node": "Has Caregiver Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Caregiver Email?": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email (Resend)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "homeward-silence-check-workflow",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
